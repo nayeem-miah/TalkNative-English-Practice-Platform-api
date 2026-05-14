@@ -70,9 +70,33 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.verifyEmail(req.body);
+
+  sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Email verified successfully!',
+    data: result,
+  });
+});
+
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.resendOtp(req.body);
+
+  sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'OTP resent successfully!',
+    data: result,
+  });
+});
+
 export const AuthController = {
   login,
   logout,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendOtp,
 };

@@ -27,6 +27,14 @@ const login = async (payload: { email: string; password: string }) => {
     throw new ApiError(401, 'Invalid credentials');
   }
 
+  if (user.status === 'SUSPENDED') {
+    throw new ApiError(httpStatus.FORBIDDEN, `Your account has been suspended. Reason: ${user.suspensionReason || 'Not specified'}`);
+  }
+
+  if (!user.isVerified) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Please verify your email to login.');
+  }
+
   const accessToken = jwtHelper.generateToken(
     {
       userId: user.id,
@@ -133,8 +141,83 @@ const resetPassword = async (token: string, payload: { password: string }) => {
   return { message: 'Password reset successful' };
 };
 
+const verifyEmail = async (payload: { email: string; code: string }) => {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already verified');
+  }
+
+  if (user.verificationCode !== payload.code) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid verification code');
+  }
+
+  if (user.verificationCodeExpires && new Date() > user.verificationCodeExpires) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Verification code has expired');
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isVerified: true,
+      verificationCode: null,
+      verificationCodeExpires: null,
+    },
+  });
+
+  return { message: 'Email verified successfully' };
+};
+
+const resendOtp = async (payload: { email: string }) => {
+  const user = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.isVerified) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already verified');
+  }
+
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCodeExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      verificationCode,
+      verificationCodeExpires,
+    },
+  });
+
+  await emailSender(
+    "Verify Your Account - FluentFlow",
+    user.email,
+    `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+      <h2 style="color: #00d2ff;">Welcome to FluentFlow!</h2>
+      <p>Your 6-digit verification code is:</p>
+      <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
+      <p>This code will expire in 5 minutes.</p>
+    </div>
+    `
+  );
+
+  return { message: 'OTP sent successfully' };
+};
+
 export const AuthServices = {
   login,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendOtp,
 };

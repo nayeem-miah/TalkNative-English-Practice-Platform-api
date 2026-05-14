@@ -5,6 +5,7 @@ import ApiError from "../../errors/apiError";
 import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
 import { UserRole } from "@prisma/client";
+import emailSender from "../../utils/emailSender";
 
 const createUser = async (req: Request) => {
   const { password } = req.body;
@@ -27,6 +28,9 @@ const createUser = async (req: Request) => {
 
 
 
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const verificationCodeExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
   const result = await prisma.user.create({
     data: {
       name: req.body.name,
@@ -34,8 +38,24 @@ const createUser = async (req: Request) => {
       password: hashPassword,
       role: req.body.role ?? UserRole.USER,
       profilePicture: "https://i.ibb.co.com/q2gwGfV/356306451-54b19ada-d53e-4ee9-8882-9dfed1bf1396.jpg",
+      verificationCode,
+      verificationCodeExpires,
     }
   })
+
+  // Send verification email
+  await emailSender(
+    "Verify Your Account - FluentFlow",
+    result.email,
+    `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+      <h2 style="color: #00d2ff;">Welcome to FluentFlow!</h2>
+      <p>Your 6-digit verification code is:</p>
+      <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
+      <p>This code will expire in 5 minutes.</p>
+    </div>
+    `
+  );
 
   return result
 };

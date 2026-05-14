@@ -51,4 +51,11 @@ export default {
   salt_rounds: Number(process.env.SALT_ROUNDS),
 
   reset_pass_link: process.env.RESET_PASS_LINK,
+
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+  },
 };

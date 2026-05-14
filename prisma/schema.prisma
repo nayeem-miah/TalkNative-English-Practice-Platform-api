@@ -27,8 +27,64 @@ model User {
   status         UserStatus @default(ACTIVE)
   Phone          String?
   profilePicture String?
+  
+  // Verification Fields
+  isVerified               Boolean   @default(false)
+  verificationCode         String?
+  verificationCodeExpires  DateTime?
+
+  // Suspension Fields
+  suspensionReason         String?
+  suspendedAt              DateTime?
+
+  // Auth & Security
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  
+  // Platform specific
+  bio                      String?
+  nativeLanguage           String?   @default("Bengali")
+  learningLanguage         String?   @default("English")
+  totalMinutesSpent        Int       @default(0)
+
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
+  callerCalls Call[]   @relation("CallerCalls")
+  calleeCalls Call[]   @relation("CalleeCalls")
+  reportsSent Report[] @relation("Reporter")
+  reportsRecv Report[] @relation("Reported")
+
   @@map("users")
+}
+
+model Call {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String   @unique
+  callerId  String   @db.ObjectId
+  calleeId  String   @db.ObjectId
+  status    String   @default("ONGOING") // ONGOING, COMPLETED, CANCELLED
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // in seconds
+
+  caller User @relation("CallerCalls", fields: [callerId], references: [id])
+  callee User @relation("CalleeCalls", fields: [calleeId], references: [id])
+
+  @@map("calls")
+}
+
+model Report {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  reporterId  String   @db.ObjectId
+  reportedId  String   @db.ObjectId
+  callId      String?  @db.ObjectId
+  reason      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id])
+  reported User @relation("Reported", fields: [reportedId], references: [id])
+
+  @@map("reports")
 }
