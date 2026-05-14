@@ -23,6 +23,34 @@ const createUser = async (req: Request) => {
   const hashPassword = await bcrypt.hash(password, 10)
 
   if (isExistingUser) {
+    // If user exists but is not verified, resend OTP instead of throwing error
+    if (!isExistingUser.isVerified) {
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCodeExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+      const updatedUser = await prisma.user.update({
+        where: { email: req.body.email },
+        data: {
+          verificationCode,
+          verificationCodeExpires
+        }
+      });
+
+      emailSender(
+        "Verify Your Account - FluentFlow",
+        updatedUser.email,
+        `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <h2 style="color: #00d2ff;">Welcome Back to FluentFlow!</h2>
+          <p>It looks like you haven't verified your account yet. Your new verification code is:</p>
+          <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
+          <p>This code will expire in 5 minutes.</p>
+        </div>
+        `
+      ).catch(err => console.error("Resend OTP Email Error:", err));
+
+      return updatedUser;
+    }
     throw new ApiError(403, "User already exists!")
   }
 
@@ -43,8 +71,8 @@ const createUser = async (req: Request) => {
     }
   })
 
-  // Send verification email
-  await emailSender(
+  // Send verification email in the background to speed up response
+  emailSender(
     "Verify Your Account - FluentFlow",
     result.email,
     `
@@ -55,11 +83,10 @@ const createUser = async (req: Request) => {
       <p>This code will expire in 5 minutes.</p>
     </div>
     `
-  );
+  ).catch(err => console.error("Registration Email Error:", err));
 
-  return result
+  return result;
 };
-
 
 const findUserById = async (id: string) => {
   try {
