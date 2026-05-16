@@ -7,7 +7,7 @@ const emailSender = async (subject: string, email: string, html: string) => {
     const transporter = nodemailer.createTransport({
       host: config.nodeMiller.email_host || "smtp.gmail.com",
       port: Number(config.nodeMiller.email_port) || 587,
-      secure: config.nodeMiller.email_port === '465', // true for 465, false for other ports
+      secure: Number(config.nodeMiller.email_port) === 465, // 465 হলে true, অন্যথায় false
       auth: {
         user: config.nodeMiller.email_user,
         pass: config.nodeMiller.email_pass
