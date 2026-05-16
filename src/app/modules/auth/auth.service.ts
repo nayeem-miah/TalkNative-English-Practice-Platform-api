@@ -83,7 +83,7 @@ const forgotPassword = async (payload: { email: string }) => {
 
   const resetLink = `${config.reset_pass_link}?token=${resetToken}`;
 
-  emailSender(
+  await emailSender(
     'Reset Your Password',
     userData.email,
     `
@@ -96,7 +96,7 @@ const forgotPassword = async (payload: { email: string }) => {
           </a>
         <p>If you didn’t request this, ignore this email.</p>
         `,
-  ).catch(err => console.error("Forgot Password Email Error:", err));
+  );
 
   return { message: 'Reset password email sent' };
 };
@@ -198,7 +198,7 @@ const resendOtp = async (payload: { email: string }) => {
     },
   });
 
-  emailSender(
+  await emailSender(
     "Verify Your Account - FluentFlow",
     user.email,
     `
@@ -209,7 +209,7 @@ const resendOtp = async (payload: { email: string }) => {
       <p>This code will expire in 5 minutes.</p>
     </div>
     `
-  ).catch(err => console.error("Resend OTP Email Error:", err));
+  );
 
   return { message: 'OTP sent successfully' };
 };

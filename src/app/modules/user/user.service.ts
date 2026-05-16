@@ -36,7 +36,7 @@ const createUser = async (req: Request) => {
         }
       });
 
-      emailSender(
+      await emailSender(
         "Verify Your Account - FluentFlow",
         updatedUser.email,
         `
@@ -47,7 +47,7 @@ const createUser = async (req: Request) => {
           <p>This code will expire in 5 minutes.</p>
         </div>
         `
-      ).catch(err => console.error("Resend OTP Email Error:", err));
+      );
 
       return updatedUser;
     }
@@ -72,7 +72,7 @@ const createUser = async (req: Request) => {
   })
 
   // Send verification email in the background to speed up response
-  emailSender(
+  await emailSender(
     "Verify Your Account - FluentFlow",
     result.email,
     `
@@ -83,7 +83,7 @@ const createUser = async (req: Request) => {
       <p>This code will expire in 5 minutes.</p>
     </div>
     `
-  ).catch(err => console.error("Registration Email Error:", err));
+  );
 
   return result;
 };
