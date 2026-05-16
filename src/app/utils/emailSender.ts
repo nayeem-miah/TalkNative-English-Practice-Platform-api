@@ -3,13 +3,19 @@ import config from "../config";
 
 
 const emailSender = async (subject: string, email: string, html: string) => {
+  const { email_host, email_port, email_user, email_pass, email_from } = config.nodeMiller;
+
+  if (!email_user || !email_pass || !email_from) {
+    throw new Error("Email configuration is missing. Please set EMAIL_USER, EMAIL_PASS, and EMAIL_FROM.");
+  }
+
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    host: email_host || "smtp.gmail.com",
+    port: Number(email_port) || 587,
+    secure: Number(email_port) === 465,
     auth: {
-      user: config.nodeMiller.email_user,
-      pass: config.nodeMiller.email_pass
+      user: email_user,
+      pass: email_pass
     },
     tls: {
       rejectUnauthorized: false,
@@ -17,7 +23,7 @@ const emailSender = async (subject: string, email: string, html: string) => {
   });
 
   const info = await transporter.sendMail({
-    from: config.nodeMiller.email_from,
+    from: email_from,
     to: email,
     subject: `${subject}`,
     html,

@@ -198,7 +198,7 @@ const resendOtp = async (payload: { email: string }) => {
     },
   });
 
-  emailSender(
+  await emailSender(
     "Verify Your Account - FluentFlow",
     user.email,
     `
@@ -209,7 +209,7 @@ const resendOtp = async (payload: { email: string }) => {
       <p>This code will expire in 5 minutes.</p>
     </div>
     `
-  ).catch(err => console.error("Resend OTP Email Error:", err));
+  );
 
   return { message: 'OTP sent successfully' };
 };
