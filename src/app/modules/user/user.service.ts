@@ -36,7 +36,7 @@ const createUser = async (req: Request) => {
         }
       });
 
-      await emailSender(
+      emailSender(
         "Verify Your Account - FluentFlow",
         updatedUser.email,
         `
@@ -44,10 +44,9 @@ const createUser = async (req: Request) => {
           <h2 style="color: #00d2ff;">Welcome Back to FluentFlow!</h2>
           <p>It looks like you haven't verified your account yet. Your new verification code is:</p>
           <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
-          <p>This code will expire in 5 minutes.</p>
         </div>
         `
-      );
+      ).catch(err => console.error("Email error:", err));
 
       return updatedUser;
     }
@@ -72,7 +71,7 @@ const createUser = async (req: Request) => {
   })
 
   // Send verification email in the background to speed up response
-  await emailSender(
+  emailSender(
     "Verify Your Account - FluentFlow",
     result.email,
     `
@@ -83,7 +82,7 @@ const createUser = async (req: Request) => {
       <p>This code will expire in 5 minutes.</p>
     </div>
     `
-  );
+  ).catch(err => console.error("Email error:", err));
 
   return result;
 };

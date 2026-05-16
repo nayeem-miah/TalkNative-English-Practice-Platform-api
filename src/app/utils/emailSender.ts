@@ -5,16 +5,11 @@ import config from "../config";
 const emailSender = async (subject: string, email: string, html: string) => {
   try {
     const transporter = nodemailer.createTransport({
-      host: config.nodeMiller.email_host || "smtp.gmail.com",
-      port: Number(config.nodeMiller.email_port) || 587,
-      secure: Number(config.nodeMiller.email_port) === 465, // 465 হলে true, অন্যথায় false
+      service: 'gmail',
       auth: {
         user: config.nodeMiller.email_user,
         pass: config.nodeMiller.email_pass
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
+      }
     });
 
     const info = await transporter.sendMail({
