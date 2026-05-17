@@ -79,6 +79,13 @@ export const handleCallSockets = (socket: Socket) => {
       // Join current socket to the call room
       socket.join(roomId);
       
+      // Auto-join all socket instances of both users to the call room on the server side
+      // to prevent WebRTC signaling race conditions where one user sends the offer
+      // before the other has joined the room.
+      io.in(`user_${userId}`).socketsJoin(roomId);
+      io.in(`user_${partnerId}`).socketsJoin(roomId);
+      console.log(`📡 Auto-joined user_${userId} and user_${partnerId} sockets to room ${roomId}`);
+      
       // Tell the partner's socket (wherever it is) to join the room
       // This requires the Redis Adapter to work across multiple instances
       io.to(`user_${partnerId}`).emit('match_found', {
