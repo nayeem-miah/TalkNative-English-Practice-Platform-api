@@ -45,11 +45,17 @@ const emailSender = async (subject: string, email: string, html: string) => {
   // Fallback / Default: Send via Nodemailer (Gmail SMTP)
   try {
     console.log("Attempting to send email via Nodemailer (Gmail SMTP)...");
+    
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: config.nodeMiller.email_host || "smtp.gmail.com",
+      port: Number(config.nodeMiller.email_port) || 587,
+      secure: Number(config.nodeMiller.email_port) === 465, // true for 465, false for other ports (like 587)
       auth: {
         user: config.nodeMiller.email_user,
         pass: config.nodeMiller.email_pass,
+      },
+      tls: {
+        rejectUnauthorized: false, // Prevents self-signed certificate / SSL verification issues on cloud environments
       },
     });
 
