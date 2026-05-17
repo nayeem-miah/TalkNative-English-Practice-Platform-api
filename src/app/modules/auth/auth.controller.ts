@@ -10,10 +10,12 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const { accessToken, refreshToken } = result;
 
   const isProduction = process.env.NODE_ENV === 'production';
+  const isDeployed = !req.headers.host?.includes('localhost') && !req.headers.host?.includes('127.0.0.1');
+
   const cookieOptions = {
-    secure: isProduction,
+    secure: isProduction || isDeployed,
     httpOnly: true,
-    sameSite: (isProduction ? 'none' : 'lax') as any,
+    sameSite: (isProduction || isDeployed ? 'none' : 'lax') as any,
   };
 
   res.cookie('accessToken', accessToken, {
