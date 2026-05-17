@@ -2,6 +2,9 @@ import { Socket } from 'socket.io';
 import { RedisHelper } from '../../utils/redis';
 import { getSocketIO } from '../../utils/socket';
 import { CallService } from './call.service';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const WAITING_USERS_KEY = 'matchmaking_queue';
 const ACTIVE_CALLS_KEY = 'active_calls';
@@ -21,22 +24,56 @@ export const handleCallSockets = (socket: Socket) => {
 
     console.log(`🔍 User ${userId} (${userData.name}) joined matchmaking queue.`);
 
-    // Get another user from the queue
-    const partnerId = await RedisHelper.client.sPop(WAITING_USERS_KEY);
+    // Get another user from the queue who is actually online
+    let partnerId: string | null = null;
+    let isPartnerOnline = false;
 
-    if (partnerId && partnerId !== userId) {
+    while (true) {
+      partnerId = await RedisHelper.client.sPop(WAITING_USERS_KEY);
+      if (!partnerId) break; // Queue is empty
+
+      if (partnerId === userId) continue; // Skip self
+
+      // Verify that this partner is currently connected/online
+      const activeSockets = await io.in(`user_${partnerId}`).fetchSockets();
+      if (activeSockets.length > 0) {
+        isPartnerOnline = true;
+        break; // Match found with an online partner!
+      } else {
+        console.log(`🧹 Cleaned up offline user ${partnerId} from queue.`);
+      }
+    }
+
+    if (isPartnerOnline && partnerId) {
       // Match found!
-      const roomId = `call_${userId}_${partnerId}`;
+      // Add a timestamp to ensure roomId is always unique, even if the same two users match again!
+      const roomId = `call_${userId}_${partnerId}_${Date.now()}`;
       
       // Store active call mapping in Redis
       await RedisHelper.client.hSet(ACTIVE_CALLS_KEY, userId, roomId);
       await RedisHelper.client.hSet(ACTIVE_CALLS_KEY, partnerId, roomId);
 
-      // Create database record
-      await CallService.createCallRecord({
-        roomId,
-        callerId: userId,
-        calleeId: partnerId
+      // Create database record safely
+      try {
+        await CallService.createCallRecord({
+          roomId,
+          callerId: userId,
+          calleeId: partnerId
+        });
+      } catch (dbError) {
+        console.error("❌ Failed to create call record in database:", dbError);
+      }
+
+
+      // Fetch user profile details from database
+      const userProfile = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, profilePicture: true, nativeLanguage: true }
+      });
+
+      const partnerProfile = await prisma.user.findUnique({
+        where: { id: partnerId },
+        select: { name: true, profilePicture: true, nativeLanguage: true }
       });
 
       // Join current socket to the call room
@@ -47,16 +84,19 @@ export const handleCallSockets = (socket: Socket) => {
       io.to(`user_${partnerId}`).emit('match_found', {
         roomId,
         partnerId: userId,
+        partnerName: userProfile?.name || "Partner",
+        partnerAvatar: userProfile?.profilePicture || "",
+        partnerLanguage: userProfile?.nativeLanguage || "Bengali",
         members: [userId, partnerId]
       });
 
-      // Join the partner to the room if they are on this instance
-      // (The emit above handles it if they are on any instance)
-      
       // Emit to current user
       socket.emit('match_found', {
         roomId,
         partnerId: partnerId,
+        partnerName: partnerProfile?.name || "Partner",
+        partnerAvatar: partnerProfile?.profilePicture || "",
+        partnerLanguage: partnerProfile?.nativeLanguage || "Bengali",
         members: [userId, partnerId]
       });
 
