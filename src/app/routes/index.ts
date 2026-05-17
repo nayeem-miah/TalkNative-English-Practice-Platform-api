@@ -8,6 +8,8 @@ const router = Router();
 router.use("/users", UserRoutes);
 router.use("/auth", AuthRoutes);
 router.use("/calls", CallRoutes);
+router.use("/call", CallRoutes); // Defensive alias for frontend compatibility
+
 
 
 

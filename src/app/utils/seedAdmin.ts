@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import config from '../config';
 import { prisma } from '../prisma/prisma';
@@ -7,6 +7,8 @@ interface IUser {
   name: string;
   email: string;
   role: UserRole;
+  isVerified: boolean;
+  status: UserStatus;
 }
 
 export const seedAdmin = async () => {
@@ -14,6 +16,8 @@ export const seedAdmin = async () => {
     name: 'Admin',
     email: config.admin.email as string,
     role: UserRole.ADMIN,
+    isVerified: true,
+    status: UserStatus.ACTIVE,
   };
   const hashedPassword = await bcrypt.hash(
     config.admin.password as string,

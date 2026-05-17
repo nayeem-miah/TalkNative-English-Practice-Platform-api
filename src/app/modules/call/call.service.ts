@@ -46,9 +46,85 @@ const getCallHistory = async (userId: string) => {
   });
 };
 
+const createReview = async (data: { reviewerId: string; revieweeId: string; rating: number; notes?: string }) => {
+  return await prisma.review.create({
+    data: {
+      reviewerId: data.reviewerId,
+      revieweeId: data.revieweeId,
+      rating: Number(data.rating),
+      notes: data.notes,
+    },
+  });
+};
+
+const getAllReports = async () => {
+  return await prisma.report.findMany({
+    include: {
+      reporter: { select: { id: true, name: true, email: true, profilePicture: true } },
+      reported: { select: { id: true, name: true, email: true, profilePicture: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+const getSingleReport = async (id: string) => {
+  return await prisma.report.findUniqueOrThrow({
+    where: { id },
+    include: {
+      reporter: { select: { id: true, name: true, email: true, profilePicture: true } },
+      reported: { select: { id: true, name: true, email: true, profilePicture: true } },
+    },
+  });
+};
+
+const getAllReviews = async () => {
+  return await prisma.review.findMany({
+    include: {
+      reviewer: { select: { id: true, name: true, email: true, profilePicture: true } },
+      reviewee: { select: { id: true, name: true, email: true, profilePicture: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+};
+
+const getSingleReview = async (id: string) => {
+  return await prisma.review.findUniqueOrThrow({
+    where: { id },
+    include: {
+      reviewer: { select: { id: true, name: true, email: true, profilePicture: true } },
+      reviewee: { select: { id: true, name: true, email: true, profilePicture: true } },
+    },
+  });
+};
+
+const suspendUser = async (userId: string, status: 'SUSPENDED' | 'ACTIVE', reason?: string) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      status,
+      suspensionReason: status === 'SUSPENDED' ? reason || 'Violated community guidelines' : null,
+      suspendedAt: status === 'SUSPENDED' ? new Date() : null,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      status: true,
+      suspensionReason: true,
+      suspendedAt: true,
+    }
+  });
+};
+
 export const CallService = {
   createCallRecord,
   updateCallStatus,
   createReport,
   getCallHistory,
+  createReview,
+  getAllReports,
+  getSingleReport,
+  getAllReviews,
+  getSingleReview,
+  suspendUser,
 };
