@@ -30,6 +30,7 @@ export default {
     email_user: process.env.EMAIL_USER,
     email_pass: process.env.EMAIL_PASS,
     email_from: process.env.EMAIL_FROM,
+    resend_api_key: process.env.RESEND_API_KEY,
   },
 
   stripe: {
