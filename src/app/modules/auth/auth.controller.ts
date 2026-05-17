@@ -9,16 +9,19 @@ const login = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthServices.login(req.body);
   const { accessToken, refreshToken } = result;
 
-  res.cookie('accessToken', accessToken, {
-    secure: true,
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = {
+    secure: isProduction,
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: (isProduction ? 'none' : 'lax') as any,
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
     maxAge: 1000 * 60 * 60,
   });
   res.cookie('refreshToken', refreshToken, {
-    secure: true,
-    httpOnly: true,
-    sameSite: 'none',
+    ...cookieOptions,
     maxAge: 1000 * 60 * 60 * 24 * 90,
   });
   sendResponse(res, {
@@ -32,8 +35,30 @@ const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 const logout = catchAsync(async (req: Request, res: Response) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  // Clear development cookies (SameSite=Lax)
+  res.clearCookie('accessToken', {
+    secure: false,
+    httpOnly: true,
+    sameSite: 'lax',
+  });
+  res.clearCookie('refreshToken', {
+    secure: false,
+    httpOnly: true,
+    sameSite: 'lax',
+  });
+
+  // Clear production cookies (SameSite=None, Secure=true)
+  res.clearCookie('accessToken', {
+    secure: true,
+    httpOnly: true,
+    sameSite: 'none',
+  });
+  res.clearCookie('refreshToken', {
+    secure: true,
+    httpOnly: true,
+    sameSite: 'none',
+  });
+
   sendResponse(res, {
     statusCode: 200,
     success: true,
