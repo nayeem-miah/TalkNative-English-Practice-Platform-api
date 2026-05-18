@@ -35,10 +35,64 @@ const emailSender = async (subject: string, email: string, html: string) => {
       return response.data;
     } catch (error: any) {
       console.error(
-        "Resend API failed, falling back to Nodemailer (Gmail SMTP)... Error details:",
+        "Resend API failed, falling back to Brevo/Nodemailer... Error details:",
         error.response?.data || error.message
       );
-      // Fall through to Nodemailer SMTP if Resend fails
+      // Fall through to other methods if Resend fails
+    }
+  }
+
+  // If Brevo API Key is provided, try sending via Brevo API next (perfect for domain-less sending on Render)
+  if (config.nodeMiller.brevo_api_key) {
+    try {
+      console.log("Attempting to send email via Brevo API...");
+
+      // Parse sender name and email from config.nodeMiller.email_from
+      let senderName = "TalkNative";
+      let senderEmail = config.nodeMiller.email_user || "nayeem5113a@gmail.com";
+
+      if (config.nodeMiller.email_from) {
+        const match = config.nodeMiller.email_from.match(/^(.*?)\s*<(.*?)>$/);
+        if (match) {
+          senderName = match[1].trim();
+          senderEmail = match[2].trim();
+        } else if (config.nodeMiller.email_from.includes("@")) {
+          senderEmail = config.nodeMiller.email_from.trim();
+        }
+      }
+
+      const response = await axios.post(
+        "https://api.brevo.com/v3/smtp/email",
+        {
+          sender: {
+            name: senderName,
+            email: senderEmail,
+          },
+          to: [
+            {
+              email: email,
+            },
+          ],
+          subject: subject,
+          htmlContent: html,
+        },
+        {
+          headers: {
+            "api-key": config.nodeMiller.brevo_api_key,
+            "Content-Type": "application/json",
+            accept: "application/json",
+          },
+        }
+      );
+
+      console.log("Email sent successfully via Brevo API:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error(
+        "Brevo API failed, falling back to Nodemailer SMTP... Error details:",
+        error.response?.data || error.message
+      );
+      // Fall through to Nodemailer SMTP if Brevo fails
     }
   }
 

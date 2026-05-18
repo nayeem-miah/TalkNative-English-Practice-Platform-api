@@ -31,6 +31,7 @@ export default {
     email_pass: process.env.EMAIL_PASS,
     email_from: process.env.EMAIL_FROM,
     resend_api_key: process.env.RESEND_API_KEY,
+    brevo_api_key: process.env.BREVO_API_KEY,
   },
 
   stripe: {
