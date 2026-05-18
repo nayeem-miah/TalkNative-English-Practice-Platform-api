@@ -14,9 +14,18 @@ const loginValidationSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+const forgotPasswordValidationSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const resetPasswordValidationSchema = z.object({
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+});
 
 export const AuthValidation = {
   verifyEmailValidationSchema,
   resendOtpValidationSchema,
   loginValidationSchema,
+  forgotPasswordValidationSchema,
+  resetPasswordValidationSchema,
 };

@@ -11,8 +11,16 @@ router.post(
   AuthController.login
 )
 router.post("/logout", AuthController.logout)
-router.post("/forgot-password", AuthController.forgotPassword);
-router.post("/reset-password", AuthController.resetPassword);
+router.post(
+  "/forgot-password", 
+  validateRequest(AuthValidation.forgotPasswordValidationSchema),
+  AuthController.forgotPassword
+);
+router.post(
+  "/reset-password", 
+  validateRequest(AuthValidation.resetPasswordValidationSchema),
+  AuthController.resetPassword
+);
 
 router.post(
   "/verify-email",

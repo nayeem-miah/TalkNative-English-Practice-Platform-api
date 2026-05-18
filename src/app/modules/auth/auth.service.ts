@@ -81,6 +81,14 @@ const forgotPassword = async (payload: { email: string }) => {
     config.jwt.reset_pass_token_expires_in as string,
   );
 
+  await prisma.user.update({
+    where: { id: userData.id },
+    data: {
+      passwordResetToken: resetToken,
+      passwordResetExpires: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+    }
+  });
+
   const resetLink = `${config.reset_pass_link}?token=${resetToken}`;
 
   await emailSender(
@@ -122,6 +130,13 @@ const resetPassword = async (token: string, payload: { password: string }) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
+  if (user.passwordResetToken !== token) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Token is invalid or has already been used!');
+  }
+  if (user.passwordResetExpires && new Date() > user.passwordResetExpires) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Token has expired!');
+  }
+
   // Hash password
   const hashedPassword = await bcrypt.hash(
     payload.password,
@@ -135,6 +150,8 @@ const resetPassword = async (token: string, payload: { password: string }) => {
     },
     data: {
       password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetExpires: null,
     },
   });
 
