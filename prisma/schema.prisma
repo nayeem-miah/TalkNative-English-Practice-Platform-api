@@ -70,8 +70,8 @@ model Call {
   endTime   DateTime?
   duration  Int?     // in seconds
 
-  caller User @relation("CallerCalls", fields: [callerId], references: [id])
-  callee User @relation("CalleeCalls", fields: [calleeId], references: [id])
+  caller User? @relation("CallerCalls", fields: [callerId], references: [id])
+  callee User? @relation("CalleeCalls", fields: [calleeId], references: [id])
 
   @@map("calls")
 }
@@ -85,8 +85,8 @@ model Report {
   description String?
   createdAt   DateTime @default(now())
 
-  reporter User @relation("Reporter", fields: [reporterId], references: [id])
-  reported User @relation("Reported", fields: [reportedId], references: [id])
+  reporter User? @relation("Reporter", fields: [reporterId], references: [id])
+  reported User? @relation("Reported", fields: [reportedId], references: [id])
 
   @@map("reports")
 }
@@ -99,8 +99,8 @@ model Review {
   notes       String?
   createdAt   DateTime @default(now())
 
-  reviewer User @relation("Reviewer", fields: [reviewerId], references: [id])
-  reviewee User @relation("Reviewee", fields: [revieweeId], references: [id])
+  reviewer User? @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewee User? @relation("Reviewee", fields: [revieweeId], references: [id])
 
   @@map("reviews")
 }
