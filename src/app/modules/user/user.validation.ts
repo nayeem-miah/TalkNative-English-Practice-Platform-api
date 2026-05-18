@@ -15,6 +15,9 @@ const updateUserValidationSchema = z
     oldPassword: z.string().min(6).optional(),
     newPassword: z.string().min(6).optional(),
     phone: z.string().optional(),
+    nativeLanguage: z.string().optional(),
+    learningLanguage: z.string().optional(),
+    bio: z.string().optional(),
   })
   .refine((data) => !(data.newPassword && !data.oldPassword), {
     message: 'Old password is required to set a new password',
