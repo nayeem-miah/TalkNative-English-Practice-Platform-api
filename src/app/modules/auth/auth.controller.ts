@@ -18,6 +18,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
     sameSite: (isProduction || isDeployed ? 'none' : 'lax') as any,
   };
 
+  // httpOnly cookies (read by server-side middleware, not JS)
   res.cookie('accessToken', accessToken, {
     ...cookieOptions,
     maxAge: 1000 * 60 * 60,
@@ -26,6 +27,15 @@ const login = catchAsync(async (req: Request, res: Response) => {
     ...cookieOptions,
     maxAge: 1000 * 60 * 60 * 24 * 90,
   });
+
+  // JS-readable cookies (read by frontend RTK Query prepareHeaders)
+  res.cookie('accessToken_js', accessToken, {
+    secure: isProduction || isDeployed,
+    httpOnly: false,
+    sameSite: (isProduction || isDeployed ? 'none' : 'lax') as any,
+    maxAge: 1000 * 60 * 60,
+  });
+
   sendResponse(res, {
     statusCode: 201,
     success: true,
@@ -48,6 +58,11 @@ const logout = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     sameSite: 'lax',
   });
+  res.clearCookie('accessToken_js', {
+    secure: false,
+    httpOnly: false,
+    sameSite: 'lax',
+  });
 
   // Clear production cookies (SameSite=None, Secure=true)
   res.clearCookie('accessToken', {
@@ -58,6 +73,11 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   res.clearCookie('refreshToken', {
     secure: true,
     httpOnly: true,
+    sameSite: 'none',
+  });
+  res.clearCookie('accessToken_js', {
+    secure: true,
+    httpOnly: false,
     sameSite: 'none',
   });
 
