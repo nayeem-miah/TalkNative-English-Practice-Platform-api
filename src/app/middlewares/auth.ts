@@ -9,9 +9,12 @@ const auth = (...roles: string[]) => {
         try {
             let user;
 
-            const token = req.cookies.accessToken || req.headers.authorization;
+            let token = req.cookies.accessToken || req.headers.authorization;
 
             if (token) {
+                if (token.startsWith("Bearer ")) {
+                    token = token.substring(7);
+                }
                 const secret = process.env.JWT_ACCESS_SECRET as string;
                 const verifyUser = jwtHelper.verifyToken(token, secret);
                 user = verifyUser;
