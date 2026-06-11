@@ -1,0 +1,44 @@
+model User {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  password       String?
+  email          String     @unique
+  role           UserRole   @default(USER)
+  status         UserStatus @default(ACTIVE)
+  Phone          String?
+  profilePicture String?
+  
+  // Verification Fields
+  isVerified               Boolean   @default(false)
+  verificationCode         String?
+  verificationCodeExpires  DateTime?
+
+  // Suspension Fields
+  suspensionReason         String?
+  suspendedAt              DateTime?
+
+  // Auth & Security
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  
+  // Platform specific
+  bio                      String?
+  nativeLanguage           String?   @default("Bengali")
+  learningLanguage         String?   @default("English")
+  totalMinutesSpent        Int       @default(0)
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  callerCalls Call[]   @relation("CallerCalls")
+  calleeCalls Call[]   @relation("CalleeCalls")
+  reportsSent Report[] @relation("Reporter")
+  reportsRecv Report[] @relation("Reported")
+  reviewsSent Review[] @relation("Reviewer")
+  reviewsRecv Review[] @relation("Reviewee")
+
+  enrollments Enrollment[]
+  progress    UserProgress[]
+
+  @@map("users")
+}

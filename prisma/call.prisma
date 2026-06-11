@@ -1,0 +1,15 @@
+model Call {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String   @unique
+  callerId  String   @db.ObjectId
+  calleeId  String   @db.ObjectId
+  status    String   @default("ONGOING") // ONGOING, COMPLETED, CANCELLED
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // in seconds
+
+  caller User? @relation("CallerCalls", fields: [callerId], references: [id])
+  callee User? @relation("CalleeCalls", fields: [calleeId], references: [id])
+
+  @@map("calls")
+}

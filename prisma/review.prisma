@@ -1,0 +1,13 @@
+model Review {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  reviewerId  String   @db.ObjectId
+  revieweeId  String   @db.ObjectId
+  rating      Int
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  reviewer User? @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewee User? @relation("Reviewee", fields: [revieweeId], references: [id])
+
+  @@map("reviews")
+}

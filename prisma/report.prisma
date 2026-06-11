@@ -1,0 +1,14 @@
+model Report {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  reporterId  String   @db.ObjectId
+  reportedId  String   @db.ObjectId
+  callId      String?  @db.ObjectId
+  reason      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  reporter User? @relation("Reporter", fields: [reporterId], references: [id])
+  reported User? @relation("Reported", fields: [reportedId], references: [id])
+
+  @@map("reports")
+}

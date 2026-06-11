@@ -1,0 +1,13 @@
+model UserProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  lessonId    String   @db.ObjectId
+  isCompleted Boolean  @default(true)
+  completedAt DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("user_progress")
+}

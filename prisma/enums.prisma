@@ -1,0 +1,27 @@
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum CourseType {
+  FREE
+  PAID
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FREE
+}

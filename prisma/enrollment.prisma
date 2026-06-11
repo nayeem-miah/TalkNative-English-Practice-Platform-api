@@ -1,0 +1,15 @@
+model Enrollment {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  courseId      String        @db.ObjectId
+  paymentStatus PaymentStatus @default(PENDING)
+  transactionId String?
+  amountPaid    Float?
+  enrolledAt    DateTime      @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
