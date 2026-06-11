@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from 'http-status';
 import { jwtHelper } from "../utils/JwtHelper";
 import ApiError from "../errors/apiError";
+import config from "../config";
 
 const auth = (...roles: string[]) => {
     return async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
@@ -15,7 +16,7 @@ const auth = (...roles: string[]) => {
                 if (token.startsWith("Bearer ")) {
                     token = token.substring(7);
                 }
-                const secret = process.env.JWT_ACCESS_SECRET as string;
+                const secret = config.jwt.accessToken as string;
                 const verifyUser = jwtHelper.verifyToken(token, secret);
                 user = verifyUser;
             }
@@ -34,6 +35,27 @@ const auth = (...roles: string[]) => {
         }
         catch (err) {
             next(err);
+        }
+    }
+}
+
+export const optionalAuth = () => {
+    return async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
+        try {
+            let token = req.cookies.accessToken || req.headers.authorization;
+
+            if (token) {
+                if (token.startsWith("Bearer ")) {
+                    token = token.substring(7);
+                }
+                const secret = config.jwt.accessToken as string;
+                const verifyUser = jwtHelper.verifyToken(token, secret);
+                req.user = verifyUser;
+            }
+            next();
+        }
+        catch (err) {
+            next();
         }
     }
 }
