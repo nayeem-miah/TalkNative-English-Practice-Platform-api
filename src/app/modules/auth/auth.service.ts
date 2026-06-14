@@ -5,6 +5,7 @@ import config from '../../config';
 import ApiError from '../../errors/apiError';
 import { prisma } from '../../prisma/prisma';
 import emailSender from '../../utils/emailSender';
+import { getOtpTemplate, getResetPasswordTemplate } from '../../utils/emailTemplates';
 import { jwtHelper } from '../../utils/JwtHelper';
 
 const login = async (payload: { email: string; password: string }) => {
@@ -94,16 +95,7 @@ const forgotPassword = async (payload: { email: string }) => {
   await emailSender(
     'Reset Your Password',
     userData.email,
-    `
-        <p>Hello ${userData.name || 'User'},</p>
-        <p>Click the link below to reset your password:</p>
-         <a href="${resetLink}" style="text-decoration: none;">
-            <button style="background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-              Reset Password
-            </button>
-          </a>
-        <p>If you didn’t request this, ignore this email.</p>
-        `,
+    getResetPasswordTemplate(userData.name || 'User', resetLink),
   );
 
   return { message: 'Reset password email sent' };
@@ -216,16 +208,9 @@ const resendOtp = async (payload: { email: string }) => {
   });
 
   await emailSender(
-    "Verify Your Account - FluentFlow",
+    "Verify Your Account - TalkNative",
     user.email,
-    `
-    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-      <h2 style="color: #00d2ff;">Welcome to FluentFlow!</h2>
-      <p>Your 6-digit verification code is:</p>
-      <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
-      <p>This code will expire in 5 minutes.</p>
-    </div>
-    `
+    getOtpTemplate(user.name || user.email, verificationCode)
   );
 
   return { message: 'OTP sent successfully' };

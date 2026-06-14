@@ -78,6 +78,9 @@ const getSingleLesson = async (
 ): Promise<Lesson> => {
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
+    include: {
+      course: true
+    }
   });
 
   if (!lesson) {

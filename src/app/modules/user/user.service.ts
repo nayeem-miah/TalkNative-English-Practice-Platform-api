@@ -6,6 +6,7 @@ import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
 import { UserRole } from "@prisma/client";
 import emailSender from "../../utils/emailSender";
+import { getOtpTemplate } from "../../utils/emailTemplates";
 
 const createUser = async (req: Request) => {
   const { password } = req.body;
@@ -37,15 +38,9 @@ const createUser = async (req: Request) => {
       });
 
       emailSender(
-        "Verify Your Account - FluentFlow",
+        "Verify Your Account - TalkNative",
         updatedUser.email,
-        `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-          <h2 style="color: #00d2ff;">Welcome Back to FluentFlow!</h2>
-          <p>It looks like you haven't verified your account yet. Your new verification code is:</p>
-          <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
-        </div>
-        `
+        getOtpTemplate(updatedUser.name || updatedUser.email, verificationCode)
       ).catch(err => console.error("Email error:", err));
 
       return updatedUser;
@@ -72,16 +67,9 @@ const createUser = async (req: Request) => {
 
   // Send verification email in the background to speed up response
   emailSender(
-    "Verify Your Account - FluentFlow",
+    "Verify Your Account - TalkNative",
     result.email,
-    `
-    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-      <h2 style="color: #00d2ff;">Welcome to FluentFlow!</h2>
-      <p>Your 6-digit verification code is:</p>
-      <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${verificationCode}</h1>
-      <p>This code will expire in 5 minutes.</p>
-    </div>
-    `
+    getOtpTemplate(result.name || result.email, verificationCode)
   ).catch(err => console.error("Email error:", err));
 
   return result;

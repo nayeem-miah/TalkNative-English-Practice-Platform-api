@@ -1,10 +1,59 @@
 import Stripe from 'stripe';
 import emailSender from '../../utils/emailSender';
+import { prisma } from '../../prisma/prisma';
+import { PaymentStatus } from '@prisma/client';
+import { getCourseEnrollmentSuccessTemplate, getPaymentSuccessTemplate } from '../../utils/emailTemplates';
 
 const handleStripeWebhooksEvent = async (event: Stripe.Event) => {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
+      const paymentType = session.metadata?.paymentType;
+
+      if (paymentType === 'COURSE_ENROLLMENT') {
+        const userId = session.metadata?.userId;
+        const courseId = session.metadata?.courseId;
+
+        if (userId && courseId) {
+          const [user, course] = await Promise.all([
+            prisma.user.findUnique({ where: { id: userId } }),
+            prisma.course.findUnique({ where: { id: courseId } }),
+          ]);
+
+          await prisma.enrollment.upsert({
+            where: {
+              userId_courseId: {
+                userId,
+                courseId,
+              },
+            },
+            update: {
+              paymentStatus: PaymentStatus.PAID,
+              transactionId: (session.payment_intent as string) || session.id,
+              amountPaid: (session.amount_total as number) / 100,
+            },
+            create: {
+              userId,
+              courseId,
+              paymentStatus: PaymentStatus.PAID,
+              transactionId: (session.payment_intent as string) || session.id,
+              amountPaid: (session.amount_total as number) / 100,
+            },
+          });
+ 
+          await emailSender(
+            'Course Enrollment Successful 🎉',
+            session.customer_email as string,
+            getCourseEnrollmentSuccessTemplate(
+              user?.name || 'Student',
+              course?.title || 'Course',
+              (session.amount_total as number) / 100,
+            ),
+          );
+        }
+        break;
+      }
+
       const orderId = session.metadata?.orderId;
 
       if (!orderId) break;
@@ -13,24 +62,10 @@ const handleStripeWebhooksEvent = async (event: Stripe.Event) => {
       await emailSender(
         'Payment Successful 🎉',
         session.customer_email as string,
-        `
-    <div style="font-family: Arial, sans-serif; padding: 20px;">
-      <h2 style="color: green;">✅ Payment Confirmed</h2>
-
-      <p>Hi there,</p>
-
-      <p>Your payment has been successfully completed. 🎉</p>
-
-      <p><strong>Amount:</strong> $${(session.amount_total as number) / 100} USD</p>
-
-      <p>Thank you for your purchase!</p>
-
-      <br/>
-      <p style="font-size: 12px; color: gray;">
-        If you have any questions, feel free to contact us.
-      </p>
-    </div>
-  `,
+        getPaymentSuccessTemplate(
+          session.customer_details?.name || 'User',
+          (session.amount_total as number) / 100,
+        ),
       );
 
       break;

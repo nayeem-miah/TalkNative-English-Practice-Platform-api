@@ -37,7 +37,7 @@ export default {
   stripe: {
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     stripeWebHookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-    frontendUrl: process.env.FRONTEND_URL,
+    frontendUrl: process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:3000",
   },
 
   //  redirect url

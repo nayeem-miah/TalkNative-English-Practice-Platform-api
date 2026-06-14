@@ -45,6 +45,12 @@ const globalErrorHandler = (
             message = "No record was found for your query.";
         }
 
+        if (err.code === "P2023") {
+            statusCode = httpStatus.BAD_REQUEST;
+            message = "Invalid ID format or Malformed ObjectID";
+            error = err.meta;
+        }
+
         if (err.code === "P2014") {
             statusCode = httpStatus.BAD_REQUEST;
             message =
