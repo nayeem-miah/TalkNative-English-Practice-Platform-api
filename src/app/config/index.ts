@@ -40,10 +40,6 @@ export default {
     frontendUrl: process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:3000",
   },
 
-  //  redirect url
-  frontendSuccessUrl: process.env.FRONTEND_SUCCESS_URL,
-  frontendFailUrl: process.env.FRONTEND_FAIL_URL,
-  frontendCancelUrl: process.env.FRONTEND_CANCEL_URL,
 
   admin: {
     email: process.env.ADMIN_EMAIL,
