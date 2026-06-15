@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Course, UserRole } from "@prisma/client";
 import httpStatus from "http-status";
 import ApiError from "../../errors/apiError";
@@ -48,9 +49,48 @@ const getAllCourses = async (query: Record<string, any>) => {
 
   const meta = courseQuery.getMeta(total);
 
+  // Compute per-course studentsCount and revenue dynamically
+  const data = await Promise.all(
+    result.map(async (course) => {
+      const enrollments = await prisma.enrollment.findMany({
+        where: { courseId: course.id },
+        select: { amountPaid: true },
+      });
+      const studentsCount = enrollments.length;
+      const revenue = enrollments.reduce((sum, e) => sum + (e.amountPaid ?? 0), 0);
+      return {
+        ...course,
+        studentsCount,
+        revenue,
+      };
+    })
+  );
+
+  // Compute global course statistics
+  const totalCourses = await prisma.course.count();
+  const publishedCourses = await prisma.course.count({
+    where: { isPublished: true },
+  });
+  const draftCourses = totalCourses - publishedCourses;
+
+  const allEnrollments = await prisma.enrollment.findMany({
+    select: { amountPaid: true },
+  });
+  const totalStudents = allEnrollments.length;
+  const totalRevenue = allEnrollments.reduce((sum, e) => sum + (e.amountPaid ?? 0), 0);
+
+  const stats = {
+    totalCourses,
+    publishedCourses,
+    draftCourses,
+    totalStudents,
+    totalRevenue,
+  };
+
   return {
     meta,
-    data: result,
+    data,
+    stats,
   };
 };
 

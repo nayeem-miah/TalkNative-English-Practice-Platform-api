@@ -8,7 +8,7 @@ type TResponse = {
     message: string;
     data?: any;
     meta?: any;
-
+    stats?: any;
 };
 
 const sendResponse = (res: Response, payload: TResponse) => {
@@ -17,7 +17,8 @@ const sendResponse = (res: Response, payload: TResponse) => {
         success: payload.success,
         message: payload.message,
         data: payload.data,
-        meta: payload.meta
+        meta: payload.meta,
+        stats: payload.stats
     });
 };
 
