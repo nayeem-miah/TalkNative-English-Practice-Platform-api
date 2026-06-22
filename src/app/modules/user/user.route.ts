@@ -18,7 +18,7 @@ router.get(
 router.get('/', UserController.getAllUsers);
 
 // FIND USER BY ID (protected)
-router.get('/:id', UserController.getFindUserById);
+router.get('/:id', auth(UserRole.USER, UserRole.ADMIN), UserController.getFindUserById);
 
 // Existing routes
 router.post(
@@ -32,6 +32,13 @@ router.patch(
   auth(UserRole.USER, UserRole.ADMIN),
   validateRequest(userValidation.updateUserValidationSchema),
   UserController.userUpdateProfile,
+);
+
+router.patch(
+  '/role/:id',
+  auth(UserRole.ADMIN),
+  validateRequest(userValidation.updateUserRoleValidationSchema),
+  UserController.updateUserRole,
 );
 
 // DELETE USER BY ID (protected)

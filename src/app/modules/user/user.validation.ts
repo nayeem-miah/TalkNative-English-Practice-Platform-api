@@ -24,7 +24,14 @@ const updateUserValidationSchema = z
     path: ['oldPassword'],
   });
 
+const updateUserRoleValidationSchema = z.object({
+  role: z.enum(['USER', 'ADMIN'], {
+    message: 'Role is required',
+  }),
+});
+
 export const userValidation = {
   createUserValidationSchema,
   updateUserValidationSchema,
+  updateUserRoleValidationSchema,
 };

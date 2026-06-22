@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Request } from "express";
 import ApiError from "../../errors/apiError";
 import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
-import { UserRole } from "@prisma/client";
 import emailSender from "../../utils/emailSender";
 import { getOtpTemplate } from "../../utils/emailTemplates";
 
@@ -76,7 +76,7 @@ const createUser = async (req: Request) => {
 };
 
 const findUserById = async (id: string) => {
-  try {
+
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -101,9 +101,6 @@ const findUserById = async (id: string) => {
     }
 
     return user;
-  } catch (error) {
-    throw new ApiError(500, `Error finding user: ${error}`);
-  }
 };
 
 
@@ -172,7 +169,7 @@ const userUpdateProfile = async (userId: string, payload: any) => {
   if (name) {
     updateData.name = name;
   }
-  
+
   if (phone !== undefined) updateData.Phone = phone;
   if (nativeLanguage !== undefined) updateData.nativeLanguage = nativeLanguage;
   if (learningLanguage !== undefined) updateData.learningLanguage = learningLanguage;
@@ -209,7 +206,22 @@ const deleteUser = async (userId: string) => {
   });
 };
 
+const updateUserRole = async (userId: string, role: UserRole) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
 
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { role },
+  });
+
+  return updatedUser;
+};
 
 export const UserService = {
   createUser,
@@ -217,5 +229,6 @@ export const UserService = {
   findUserById,
   getSingleUser,
   userUpdateProfile,
-  deleteUser
+  deleteUser,
+  updateUserRole
 };

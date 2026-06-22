@@ -40,11 +40,9 @@ const getSingleUser = catchAsync(async (req: Request & { user?: any }, res: Resp
     });
 });
 
-const getFindUserById = catchAsync(async (req: Request & { user?: any }, res: Response) => {
+const getFindUserById = catchAsync(async (req: Request, res: Response) => {
 
-    const decodedUser = req.user as any;
-
-    const user = await UserService.findUserById(decodedUser.userId);
+    const user = await UserService.findUserById(req.params.id as string);
 
 
     sendResponse(res, {
@@ -82,8 +80,19 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
     })
 });
 
+const updateUserRole = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { role } = req.body;
 
+    const result = await UserService.updateUserRole(id, role);
 
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "User role updated successfully",
+        data: result
+    });
+});
 
 export const UserController = {
     createUser,
@@ -91,6 +100,6 @@ export const UserController = {
     getSingleUser,
     getFindUserById,
     userUpdateProfile,
-    deleteUser
-
+    deleteUser,
+    updateUserRole
 };
