@@ -18,7 +18,7 @@ router.get(
 
 router.get(
   "/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
+  optionalAuth(),
   CourseController.getSingleCourse
 );
 
