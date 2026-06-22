@@ -41,6 +41,13 @@ router.patch(
   UserController.updateUserRole,
 );
 
+router.patch(
+  '/status/:id',
+  auth(UserRole.ADMIN),
+  validateRequest(userValidation.updateUserStatusValidationSchema),
+  UserController.updateUserStatus,
+);
+
 // DELETE USER BY ID (protected)
 router.delete('/:id', auth(UserRole.ADMIN), UserController.deleteUser);
 

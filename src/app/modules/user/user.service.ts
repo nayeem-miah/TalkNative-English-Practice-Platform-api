@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { UserRole } from "@prisma/client";
+import { UserRole, UserStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { Request } from "express";
 import ApiError from "../../errors/apiError";
@@ -223,6 +223,23 @@ const updateUserRole = async (userId: string, role: UserRole) => {
   return updatedUser;
 };
 
+const updateUserStatus = async (userId: string, status: UserStatus) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { status },
+  });
+
+  return updatedUser;
+};
+
 export const UserService = {
   createUser,
   getAllUsers,
@@ -230,5 +247,6 @@ export const UserService = {
   getSingleUser,
   userUpdateProfile,
   deleteUser,
-  updateUserRole
+  updateUserRole,
+  updateUserStatus
 };

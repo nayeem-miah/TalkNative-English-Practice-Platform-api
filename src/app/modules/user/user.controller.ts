@@ -94,6 +94,20 @@ const updateUserRole = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const result = await UserService.updateUserStatus(id, status);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "User status updated successfully",
+        data: result
+    });
+});
+
 export const UserController = {
     createUser,
     getAllUsers,
@@ -101,5 +115,6 @@ export const UserController = {
     getFindUserById,
     userUpdateProfile,
     deleteUser,
-    updateUserRole
+    updateUserRole,
+    updateUserStatus
 };

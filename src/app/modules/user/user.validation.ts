@@ -30,8 +30,15 @@ const updateUserRoleValidationSchema = z.object({
   }),
 });
 
+const updateUserStatusValidationSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED'], {
+    message: 'Status is required',
+  }),
+});
+
 export const userValidation = {
   createUserValidationSchema,
   updateUserValidationSchema,
   updateUserRoleValidationSchema,
+  updateUserStatusValidationSchema,
 };
