@@ -5,9 +5,11 @@ import { CallRoutes } from "../modules/call/call.routes";
 import { CourseRoutes } from "../modules/course/course.route";
 import { LessonRoutes } from "../modules/lesson/lesson.route";
 import { EnrollmentRoutes } from "../modules/enrollment/enrollment.route";
+import { AdminRoutes } from "../modules/admin/admin.route";
 
 const router = Router();
 
+router.use("/admin", AdminRoutes);
 router.use("/users", UserRoutes);
 router.use("/auth", AuthRoutes);
 router.use("/calls", CallRoutes);
