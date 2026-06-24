@@ -18,7 +18,13 @@ const updateCourseValidationSchema = z.object({
   isPublished: z.boolean().optional(),
 });
 
+const createReviewValidationSchema = z.object({
+  rating: z.number().int().min(1, "Rating must be at least 1").max(5, "Rating cannot be more than 5"),
+  comment: z.string().optional(),
+});
+
 export const courseValidation = {
   createCourseValidationSchema,
   updateCourseValidationSchema,
+  createReviewValidationSchema,
 };

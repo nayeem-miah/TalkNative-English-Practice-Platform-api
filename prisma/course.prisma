@@ -12,6 +12,7 @@ model Course {
 
   lessons     Lesson[]
   enrollments Enrollment[]
+  reviews     CourseReview[]
 
   @@map("courses")
 }

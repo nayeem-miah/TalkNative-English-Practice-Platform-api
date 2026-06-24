@@ -79,10 +79,37 @@ const deleteCourse = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createCourseReview = catchAsync(async (req: Request & { user?: any }, res: Response) => {
+  const courseId = req.params.id as string;
+  const userId = req.user.userId as string;
+  const result = await CourseService.createCourseReview(courseId, userId, req.body);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Review submitted successfully",
+    data: result,
+  });
+});
+
+const getCourseReviews = catchAsync(async (req: Request, res: Response) => {
+  const courseId = req.params.id;
+  const result = await CourseService.getCourseReviews(courseId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Reviews retrieved successfully",
+    data: result,
+  });
+});
+
 export const CourseController = {
   createCourse,
   getAllCourses,
   getSingleCourse,
   updateCourse,
   deleteCourse,
+  createCourseReview,
+  getCourseReviews,
 };

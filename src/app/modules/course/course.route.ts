@@ -22,6 +22,18 @@ router.get(
   CourseController.getSingleCourse
 );
 
+router.post(
+  "/:id/reviews",
+  auth(UserRole.USER, UserRole.ADMIN),
+  validateRequest(courseValidation.createReviewValidationSchema),
+  CourseController.createCourseReview
+);
+
+router.get(
+  "/:id/reviews",
+  CourseController.getCourseReviews
+);
+
 
 router.post(
   "/",

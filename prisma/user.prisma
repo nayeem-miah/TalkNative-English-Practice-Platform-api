@@ -39,6 +39,7 @@ model User {
 
   enrollments Enrollment[]
   progress    UserProgress[]
+  courseReviews CourseReview[]
 
   @@map("users")
 }

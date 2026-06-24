@@ -132,10 +132,35 @@ const getSingleCourse = async (
     }
   }
 
+  // Fetch reviews
+  const reviews = await prisma.courseReview.findMany({
+    where: { courseId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          profilePicture: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews > 0
+    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1))
+    : 0;
+
   if (role === UserRole.ADMIN || isEnrolled) {
     return {
       ...course,
       isEnrolled,
+      reviews,
+      totalReviews,
+      averageRating,
     };
   }
 
@@ -153,6 +178,9 @@ const getSingleCourse = async (
     ...course,
     lessons: sanitizedLessons,
     isEnrolled: false,
+    reviews,
+    totalReviews,
+    averageRating,
   };
 };
 
@@ -192,10 +220,104 @@ const deleteCourse = async (courseId: string): Promise<Course> => {
   return result;
 };
 
+const createCourseReview = async (
+  courseId: string,
+  userId: string,
+  payload: { rating: number; comment?: string }
+) => {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+  });
+  if (!course) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
+  }
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+  });
+
+  if (!enrollment || (enrollment.paymentStatus !== "PAID" && enrollment.paymentStatus !== "FREE")) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You must be enrolled in this course to leave a review"
+    );
+  }
+
+  const existingReview = await prisma.courseReview.findUnique({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+  });
+
+  if (existingReview) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "You have already reviewed this course"
+    );
+  }
+
+  const result = await prisma.courseReview.create({
+    data: {
+      courseId,
+      userId,
+      rating: payload.rating,
+      comment: payload.comment,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          profilePicture: true,
+        },
+      },
+    },
+  });
+
+  return result;
+};
+
+const getCourseReviews = async (courseId: string) => {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+  });
+  if (!course) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Course not found");
+  }
+
+  const reviews = await prisma.courseReview.findMany({
+    where: { courseId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          profilePicture: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return reviews;
+};
+
 export const CourseService = {
   createCourse,
   getAllCourses,
   getSingleCourse,
   updateCourse,
   deleteCourse,
+  createCourseReview,
+  getCourseReviews,
 };
