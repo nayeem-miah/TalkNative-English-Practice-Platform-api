@@ -1,7 +1,9 @@
 import { UserRole } from '@prisma/client';
 import express from 'express';
 import auth from '../../middlewares/auth';
+import { parseFormData } from '../../middlewares/parseFormData';
 import validateRequest from '../../middlewares/validateRequest';
+import { fileUpload } from '../../utils/fileUpload';
 import { UserController } from './user.controller';
 import { userValidation } from './user.validation';
 
@@ -30,6 +32,8 @@ router.post(
 router.patch(
   '/update-profile',
   auth(UserRole.USER, UserRole.ADMIN),
+  fileUpload.upload.single('file'),
+  parseFormData,
   validateRequest(userValidation.updateUserValidationSchema),
   UserController.userUpdateProfile,
 );

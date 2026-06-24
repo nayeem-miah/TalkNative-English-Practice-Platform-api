@@ -152,7 +152,7 @@ const getSingleUser = async (userId: string) => {
 };
 
 const userUpdateProfile = async (userId: string, payload: any) => {
-  const { name, oldPassword, newPassword, phone, nativeLanguage, learningLanguage, bio } = payload;
+  const { name, oldPassword, newPassword, phone, nativeLanguage, learningLanguage, bio, profilePicture } = payload;
 
 
   const user = await prisma.user.findUnique({
@@ -174,6 +174,7 @@ const userUpdateProfile = async (userId: string, payload: any) => {
   if (nativeLanguage !== undefined) updateData.nativeLanguage = nativeLanguage;
   if (learningLanguage !== undefined) updateData.learningLanguage = learningLanguage;
   if (bio !== undefined) updateData.bio = bio;
+  if (profilePicture !== undefined) updateData.profilePicture = profilePicture;
 
   // update password
   if (oldPassword && newPassword) {

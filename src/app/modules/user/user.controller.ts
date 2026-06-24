@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { UserService } from "./user.service";
+import { fileUpload } from "../../utils/fileUpload";
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
     const user = await UserService.createUser(req);
@@ -55,7 +56,13 @@ const getFindUserById = catchAsync(async (req: Request, res: Response) => {
 
 
 const userUpdateProfile = catchAsync(async (req: Request & { user?: any }, res: Response) => {
-    const decodedUser = req.user as any;;
+    const decodedUser = req.user as any;
+
+    if (req.file) {
+        const uploadResult = await fileUpload.uploadToCloudinary(req.file);
+        req.body.profilePicture = uploadResult.secure_url;
+    }
+
     const payload = req.body;
 
     const result = await UserService.userUpdateProfile(decodedUser.userId, payload)
