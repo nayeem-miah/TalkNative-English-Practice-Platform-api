@@ -1,0 +1,10 @@
+model Message {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  ticketId    String   @db.ObjectId
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId    String   @db.ObjectId // User ID or Admin ID
+  senderModel String   @default("USER") // "USER" or "ADMIN"
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -25,3 +25,19 @@ enum PaymentStatus {
   PAID
   FREE
 }
+
+enum AnnouncementStatus {
+  PUBLISHED
+  DRAFT
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+}
+
+enum AnnouncementCategory {
+  SYSTEM_ALERT
+  FEATURE_UPDATE
+  PROMOTION
+}

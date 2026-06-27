@@ -7,6 +7,9 @@ import { LessonRoutes } from "../modules/lesson/lesson.route";
 import { EnrollmentRoutes } from "../modules/enrollment/enrollment.route";
 import { AdminRoutes } from "../modules/admin/admin.route";
 
+import { AnnouncementRoutes } from "../modules/announcement/announcement.route";
+import { ChatRoutes } from "../modules/chat/chat.route";
+
 const router = Router();
 
 router.use("/admin", AdminRoutes);
@@ -17,10 +20,7 @@ router.use("/call", CallRoutes); // Defensive alias for frontend compatibility
 router.use("/courses", CourseRoutes);
 router.use("/lessons", LessonRoutes);
 router.use("/enrollments", EnrollmentRoutes);
-
-
-
-
-
+router.use("/announcements", AnnouncementRoutes);
+router.use("/chat", ChatRoutes);
 
 export default router;

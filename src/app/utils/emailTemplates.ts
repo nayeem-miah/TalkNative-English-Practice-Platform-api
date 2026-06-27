@@ -202,3 +202,22 @@ export const getPaymentSuccessTemplate = (userName: string, amount: number): str
     `
   });
 };
+
+/**
+ * Generates Announcement email template
+ */
+export const getAnnouncementTemplate = (userName: string, title: string, content: string): string => {
+  return wrapLayout({
+    title: title,
+    preheader: "New Announcement from TalkNative",
+    contentHtml: `
+      <h2>Hello ${userName || "User"},</h2>
+      <p>We have a new announcement for you:</p>
+      <div style="background-color: #f9fafb; border-radius: 8px; padding: 15px; border: 1px solid #e5e7eb; margin: 25px 0;">
+        <h3 style="margin: 0 0 10px 0; color: #4F46E5;">${title}</h3>
+        <div style="color: #374151; white-space: pre-wrap;">${content}</div>
+      </div>
+      <p>Best regards,<br/>The TalkNative Team</p>
+    `
+  });
+};

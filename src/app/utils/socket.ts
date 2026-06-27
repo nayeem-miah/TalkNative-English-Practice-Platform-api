@@ -3,6 +3,8 @@ import { Server as HttpServer } from 'http';
 
 import { handleCallSockets } from '../modules/call/call.socket';
 
+import { handleChatSockets } from '../modules/chat/chat.socket';
+
 let io: SocketServer;
 
 export const initializeSocket = (server: HttpServer) => {
@@ -18,6 +20,7 @@ export const initializeSocket = (server: HttpServer) => {
 
     // Initialize module-specific sockets
     handleCallSockets(socket);
+    handleChatSockets(socket);
 
     socket.on('disconnect', () => {
       console.log('🔌 Client disconnected:', socket.id);
