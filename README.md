@@ -74,7 +74,7 @@ Clone the repository and install dependencies:
 npm install
 \`\`\`
 
-### 3. Environment Variables
+## ⚙️ Environment Variables
 Create a \`.env\` file in the root directory based on the \`.env.example\` file. You will need:
 \`\`\`env
 # App
@@ -103,7 +103,7 @@ CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
 \`\`\`
 
-### 4. Database Setup (Prisma)
+## 🗄️ Database Setup (Prisma)
 Run the following commands to generate the Prisma client and push the schema to your database:
 \`\`\`bash
 # Generate the Prisma Client
@@ -118,7 +118,7 @@ npx prisma db push
 npm run seed
 \`\`\`
 
-### 5. Running the Application
+## 🏃 Running the Application
 \`\`\`bash
 # Run in development mode (with nodemon & ts-node-dev)
 npm run dev
