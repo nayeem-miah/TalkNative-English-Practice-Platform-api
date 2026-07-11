@@ -9,6 +9,7 @@ import { AdminRoutes } from "../modules/admin/admin.route";
 
 import { AnnouncementRoutes } from "../modules/announcement/announcement.route";
 import { ChatRoutes } from "../modules/chat/chat.route";
+import { CommunityRoutes } from "../modules/community/community.route";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/lessons", LessonRoutes);
 router.use("/enrollments", EnrollmentRoutes);
 router.use("/announcements", AnnouncementRoutes);
 router.use("/chat", ChatRoutes);
+router.use("/community", CommunityRoutes);
 
 export default router;

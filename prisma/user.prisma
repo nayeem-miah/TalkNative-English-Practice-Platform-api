@@ -42,5 +42,9 @@ model User {
   courseReviews CourseReview[]
   tickets     Ticket[]
 
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+
   @@map("users")
 }
