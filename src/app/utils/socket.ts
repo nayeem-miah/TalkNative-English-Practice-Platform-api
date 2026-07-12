@@ -1,5 +1,5 @@
-import { Server as SocketServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
+import { Server as SocketServer } from 'socket.io';
 
 import { handleCallSockets } from '../modules/call/call.socket';
 
@@ -18,12 +18,17 @@ export const initializeSocket = (server: HttpServer) => {
   io.on('connection', (socket) => {
     console.log('👤 New client connected:', socket.id);
 
+    io.emit('online_count_update', { count: io.engine.clientsCount });
+
     // Initialize module-specific sockets
     handleCallSockets(socket);
     handleChatSockets(socket);
 
     socket.on('disconnect', () => {
       console.log('🔌 Client disconnected:', socket.id);
+      setTimeout(() => {
+        io.emit('online_count_update', { count: io.engine.clientsCount });
+      }, 100);
     });
   });
 
