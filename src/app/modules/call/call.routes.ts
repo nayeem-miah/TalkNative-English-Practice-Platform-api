@@ -2,18 +2,22 @@ import express from 'express';
 import { CallController } from './call.controller';
 import auth from '../../middlewares/auth';
 import { UserRole } from '@prisma/client';
+import validateRequest from '../../middlewares/validateRequest';
+import { CallValidation } from './call.validation';
 
 const router = express.Router();
 
 router.post(
   '/report',
   auth(UserRole.USER, UserRole.ADMIN),
+  validateRequest(CallValidation.createReportValidationSchema),
   CallController.createReport
 );
 
 router.post(
   '/review',
   auth(UserRole.USER, UserRole.ADMIN),
+  validateRequest(CallValidation.createReviewValidationSchema),
   CallController.createReview
 );
 
