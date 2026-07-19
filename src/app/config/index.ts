@@ -50,6 +50,8 @@ export default {
 
   reset_pass_link: process.env.RESET_PASS_LINK,
 
+  gemini_api_key: process.env.GEMINI_API_KEY,
+
   client_url: process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:3000",
 
   google: {
