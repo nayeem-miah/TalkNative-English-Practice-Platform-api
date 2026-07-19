@@ -50,6 +50,14 @@ export default {
 
   reset_pass_link: process.env.RESET_PASS_LINK,
 
+  client_url: process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:3000",
+
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || "http://localhost:8321/api/v1/auth/google/callback",
+  },
+
   redis: {
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),

@@ -1,12 +1,16 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
+import passport from "./app/config/passport";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
 import { PaymentController } from "./app/modules/payment/payemnt.controller";
 import router from "./app/routes";
 
 const app: Application = express();
+
+// Initialize passport
+app.use(passport.initialize());
 
 // Webhook must be before other middleware
 app.post(
@@ -39,7 +43,7 @@ app.get("/", (req: Request, res: Response) => {
     res.status(200).json({
         success: true,
         statusCode: 200,
-        message: "Welcome to MedSupply API",
+        message: "Welcome to TalkNative API",
     });
 });
 

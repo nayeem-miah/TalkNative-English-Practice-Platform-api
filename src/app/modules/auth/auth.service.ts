@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
 import { Secret } from 'jsonwebtoken';
 import config from '../../config';
 import ApiError from '../../errors/apiError';
 import { prisma } from '../../prisma/prisma';
+import { jwtHelper } from '../../utils/JwtHelper';
 import emailSender from '../../utils/emailSender';
 import { getOtpTemplate, getResetPasswordTemplate } from '../../utils/emailTemplates';
-import { jwtHelper } from '../../utils/JwtHelper';
 
 const login = async (payload: { email: string; password: string }) => {
   const user = await prisma.user.findUniqueOrThrow({
@@ -216,8 +217,44 @@ const resendOtp = async (payload: { email: string }) => {
   return { message: 'OTP sent successfully' };
 };
 
+const googleLogin = async (user: any) => {
+  if (user.status === 'SUSPENDED') {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      `Your account has been suspended. Reason: ${user.suspensionReason || 'Not specified'}`
+    );
+  }
+
+  const accessToken = jwtHelper.generateToken(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    config.jwt.accessToken as string,
+    config.jwt.accessTokenExpiresIn as string,
+  );
+
+  const refreshToken = jwtHelper.generateToken(
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    },
+    config.jwt.refreshToken as string,
+    config.jwt.refreshTokenExpiresIn as string,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    user,
+  };
+};
+
 export const AuthServices = {
   login,
+  googleLogin,
   forgotPassword,
   resetPassword,
   verifyEmail,

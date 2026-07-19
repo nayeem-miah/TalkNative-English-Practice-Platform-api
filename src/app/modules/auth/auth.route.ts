@@ -1,9 +1,11 @@
 
-import express from 'express'
-import { AuthController } from './auth.controller'
+import express from 'express';
+import passport from 'passport';
+import config from '../../config';
 import validateRequest from '../../middlewares/validateRequest';
+import { AuthController } from './auth.controller';
 import { AuthValidation } from './auth.validation';
-const router = express.Router()
+const router = express.Router();
 
 router.post(
   "/login",
@@ -12,12 +14,12 @@ router.post(
 )
 router.post("/logout", AuthController.logout)
 router.post(
-  "/forgot-password", 
+  "/forgot-password",
   validateRequest(AuthValidation.forgotPasswordValidationSchema),
   AuthController.forgotPassword
 );
 router.post(
-  "/reset-password", 
+  "/reset-password",
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthController.resetPassword
 );
@@ -34,7 +36,19 @@ router.post(
   AuthController.resendOtp
 );
 
+// Google login auth
+router.get(
+  '/google',
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false })
+);
 
+router.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${config.client_url}/login?error=GoogleAuthFailed`,
+  }),
+  AuthController.googleLoginCallback
+);
 
-
-export const AuthRoutes = router
+export const AuthRoutes = router;

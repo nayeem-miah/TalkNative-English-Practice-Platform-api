@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import HttpStatus from 'http-status';
+import config from '../../config';
 import ApiError from '../../errors/apiError';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
@@ -139,8 +141,49 @@ const resendOtp = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const googleLoginCallback = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user as any;
+  if (!user) {
+    throw new ApiError(HttpStatus.UNAUTHORIZED, 'Google authentication failed');
+  }
+
+  const result = await AuthServices.googleLogin(user);
+  const { accessToken, refreshToken } = result;
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDeployed =
+    !req.headers.host?.includes('localhost') &&
+    !req.headers.host?.includes('127.0.0.1');
+
+  const cookieOptions = {
+    secure: isProduction || isDeployed,
+    httpOnly: true,
+    sameSite: (isProduction || isDeployed ? 'none' : 'lax') as any,
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
+    maxAge: 1000 * 60 * 60,
+  });
+  res.cookie('refreshToken', refreshToken, {
+    ...cookieOptions,
+    maxAge: 1000 * 60 * 60 * 24 * 90,
+  });
+
+  res.cookie('accessToken_js', accessToken, {
+    secure: isProduction || isDeployed,
+    httpOnly: false,
+    sameSite: (isProduction || isDeployed ? 'none' : 'lax') as any,
+    maxAge: 1000 * 60 * 60,
+  });
+
+  const redirectUrl = `${config.client_url}/google-callback?token=${accessToken}&refreshToken=${refreshToken}`;
+  res.redirect(redirectUrl);
+});
+
 export const AuthController = {
   login,
+  googleLoginCallback,
   logout,
   forgotPassword,
   resetPassword,
