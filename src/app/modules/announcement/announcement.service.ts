@@ -1,27 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AnnouncementStatus } from "@prisma/client";
+import { AnnouncementStatus, NotificationType } from "@prisma/client";
 import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
-
 import emailSender from "../../utils/emailSender";
 import { getAnnouncementTemplate } from "../../utils/emailTemplates";
+import { sendNotification } from "../../utils/sendNotification";
 
 const createAnnouncement = async (payload: any) => {
   const result = await prisma.announcement.create({
     data: payload,
   });
 
-  // send email for all user when publish announcement
   if (result.status === AnnouncementStatus.PUBLISHED) {
-    prisma.user.findMany({ select: { email: true, name: true } })
+    prisma.user.findMany({ select: { id: true, email: true, name: true } })
       .then((users) => {
         users.forEach((user) => {
           const html = getAnnouncementTemplate(user.name, result.title, result.content);
           emailSender(`New Announcement: ${result.title}`, user.email, html)
             .catch(err => console.error(`Failed to send announcement email to ${user.email}`, err));
+          sendNotification({
+            userId:  user.id,
+            type:    NotificationType.ANNOUNCEMENT,
+            title:   `📢 ${result.title}`,
+            message: result.content.substring(0, 100) + (result.content.length > 100 ? "..." : ""),
+            link:    `/announcements`,
+          }).catch(err => console.error(`Failed to send notification to ${user.id}`, err));
         });
       })
-      .catch(err => console.error("Failed to fetch users for announcement emails", err));
+      .catch(err => console.error("Failed to fetch users for announcement", err));
   }
 
   return result;

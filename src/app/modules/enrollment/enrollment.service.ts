@@ -1,10 +1,12 @@
-import { Enrollment, PaymentStatus } from "@prisma/client";
-import { prisma } from "../../prisma/prisma";
-import { stripe } from "../../utils/stripe";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Enrollment, NotificationType, PaymentStatus } from "@prisma/client";
+import httpStatus from "http-status";
 import config from "../../config";
 import ApiError from "../../errors/apiError";
-import httpStatus from "http-status";
+import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
+import { sendNotification } from "../../utils/sendNotification";
+import { stripe } from "../../utils/stripe";
 
 const enrollFreeCourse = async (userId: string, courseId: string): Promise<Enrollment> => {
   const course = await prisma.course.findUnique({
@@ -59,6 +61,15 @@ const enrollFreeCourse = async (userId: string, courseId: string): Promise<Enrol
       amountPaid: 0.0,
       transactionId: "FREE_COURSE",
     },
+  });
+
+  // Notify the student about successful enrollment
+  await sendNotification({
+    userId,
+    type:    NotificationType.ENROLLMENT,
+    title:   "🎉 Enrolled Successfully!",
+    message: `You have successfully enrolled in "${course.title}". Start learning now!`,
+    link:    `/courses/${courseId}`,
   });
 
   return result;

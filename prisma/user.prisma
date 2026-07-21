@@ -46,5 +46,7 @@ model User {
   comments Comment[]
   likes    Like[]
 
+  notifications Notification[]
+
   @@map("users")
 }

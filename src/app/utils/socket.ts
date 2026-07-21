@@ -2,7 +2,6 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 
 import { handleCallSockets } from '../modules/call/call.socket';
-
 import { handleChatSockets } from '../modules/chat/chat.socket';
 
 let io: SocketServer;
@@ -19,6 +18,15 @@ export const initializeSocket = (server: HttpServer) => {
     console.log('👤 New client connected:', socket.id);
 
     io.emit('online_count_update', { count: io.engine.clientsCount });
+
+    // ─── Notification Room ────────────────────────────────────────────
+    // Frontend calls: socket.emit('join_notification_room', userId)
+    // Server pushes: io.to(`user:${userId}`).emit('notification', data)
+    socket.on('join_notification_room', (userId: string) => {
+      socket.join(`user:${userId}`);
+      console.log(`🔔 User ${userId} joined notification room`);
+    });
+    // ─────────────────────────────────────────────────────────────────
 
     // Initialize module-specific sockets
     handleCallSockets(socket);

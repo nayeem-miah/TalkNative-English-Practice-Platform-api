@@ -1,0 +1,25 @@
+enum NotificationType {
+  LIKE
+  COMMENT
+  ENROLLMENT
+  ANNOUNCEMENT
+  CALL
+  SYSTEM
+}
+
+model Notification {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String           @db.ObjectId  // receiver
+  senderId    String?          @db.ObjectId  // who triggered (null = system)
+  type        NotificationType
+  title       String
+  message     String
+  link        String?          // deep link e.g. /community/posts/abc
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+  @@index([userId, isRead])
+}

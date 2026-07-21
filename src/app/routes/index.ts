@@ -11,6 +11,7 @@ import { AnnouncementRoutes } from "../modules/announcement/announcement.route";
 import { ChatRoutes } from "../modules/chat/chat.route";
 import { CommunityRoutes } from "../modules/community/community.route";
 import { AiTutorRoutes } from "../modules/ai-tutor/ai-tutor.route";
+import { NotificationRoutes } from "../modules/notification/notification.route";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use("/announcements", AnnouncementRoutes);
 router.use("/chat", ChatRoutes);
 router.use("/community", CommunityRoutes);
 router.use("/ai-tutor", AiTutorRoutes);
+router.use("/notifications", NotificationRoutes);
 
 export default router;

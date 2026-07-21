@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status";
+import { NotificationType } from "@prisma/client";
 import ApiError from "../../errors/apiError";
 import { prisma } from "../../prisma/prisma";
 import { PrismaQueryBuilder } from "../../utils/QueryBuilder";
+import { sendNotification } from "../../utils/sendNotification";
 
 const createPost = async (userId: string, payload: any) => {
   const result = await prisma.post.create({
@@ -240,6 +242,19 @@ const toggleLike = async (userId: string, postId: string) => {
         userId,
       },
     });
+
+    // Notify post author (skip if liking own post)
+    if (post.authorId !== userId) {
+      await sendNotification({
+        userId:   post.authorId,
+        senderId: userId,
+        type:     NotificationType.LIKE,
+        title:    "Someone liked your post! ❤️",
+        message:  "Your post received a new like.",
+        link:     `/community/posts/${postId}`,
+      });
+    }
+
     return { liked: true };
   }
 };
@@ -270,6 +285,18 @@ const createComment = async (userId: string, postId: string, payload: any) => {
       },
     },
   });
+
+  // notification
+  if (post.authorId !== userId) {
+    await sendNotification({
+      userId:   post.authorId,
+      senderId: userId,
+      type:     NotificationType.COMMENT,
+      title:    "New comment on your post! 💬",
+      message:  `Someone commented: "${payload.content.substring(0, 60)}${payload.content.length > 60 ? '...' : ''}"`,
+      link:     `/community/posts/${postId}`,
+    });
+  }
 
   return comment;
 };
