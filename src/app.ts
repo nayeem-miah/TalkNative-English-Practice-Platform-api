@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
+import morgan from "morgan";
 import passport from "./app/config/passport";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
@@ -11,6 +12,9 @@ const app: Application = express();
 
 // Initialize passport
 app.use(passport.initialize());
+
+// Logger middleware
+app.use(morgan("dev"));
 
 // Webhook must be before other middleware
 app.post(
