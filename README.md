@@ -1,4 +1,4 @@
-# 🚀 TalkNative - English Practice Platform (API)
+#  TalkNative - English Practice Platform (API)
 
 A **scalable, robust, and real-time backend API** built with **Node.js, Express, TypeScript, and Prisma**. This API powers the TalkNative platform, an innovative application designed to help users practice English through interactive courses, live video calls, and a supportive community.
 
